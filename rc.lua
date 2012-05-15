@@ -17,6 +17,8 @@ require("naughty")
 -- User libraries
 require("vicious") -- ./vicious
 require("helpers") -- helpers.lua
+require("scratch") 
+require("revelation")
 -- }}}
 
 -- {{{ Default configuration
@@ -28,21 +30,23 @@ editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
 wallpaper_app = "feh" -- if you want to check for app before trying
-wallpaper_dir = os.getenv("HOME") .. "/Pictures/Wallpaper" -- wallpaper dir
+wallpaper_dir = os.getenv("HOME") .. "/Pictures" -- wallpaper dir
 
 -- taglist numerals
 --- arabic, chinese, {east|persian}_arabic, roman, thai, random
-taglist_numbers = "chinese" -- we support arabic (1,2,3...),
+taglist_numbers = "tag" -- we support arabic (1,2,3...),
 
 cpugraph_enable = true -- Show CPU graph
 cputext_format = " $1%" -- %1 average cpu, %[2..] every other thread individually
-
+cpufreq_text_format = " $2g" -- %2 cpu freq in GHz
 membar_enable = true -- Show memory bar
 memtext_format = " $1%" -- %1 percentage, %2 used %3 total %4 free
 
+diotext_format = "R:${sda read_kb}  W:${sda write_kb}" -- read and write in kb
+
 date_format = "%a %m/%d/%Y %l:%M%p" -- refer to http://en.wikipedia.org/wiki/Date_(Unix) specifiers
 
-networks = {'eth0'} -- add your devices network interface here netwidget, only shows first one thats up.
+networks = {'eth0','wlan0'} -- add your devices network interface here netwidget, only shows first one thats up.
 
 require_safe('personal')
 
@@ -78,6 +82,7 @@ layouts = {
 taglist_numbers_langs = { 'arabic', 'chinese', 'east_arabic', 'persian_arabic', }
 taglist_numbers_sets = {
 	arabic={ 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+	tag={ "term", "browser", "edit",  "mail","chat", "java", "gui", "read", 9 },
 	chinese={"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"},
 	east_arabic={'١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'}, -- '٠' 0
 	persian_arabic={'٠', '١', '٢', '٣', '۴', '۵', '۶', '٧', '٨', '٩'},
@@ -141,6 +146,19 @@ end
 cpuwidget = widget({ type = "textbox" }) -- initialize
 vicious.register(cpuwidget, vicious.widgets.cpu, cputext_format, 3) -- register
 
+-- cpufreq text widget
+cpufreq_text = widget({ type = "textbox" }) -- initialize
+vicious.register(cpufreq_text, vicious.widgets.cpufreq, cpufreq_text_format, 5,"cpu0") -- register
+
+--[[Create a gmail widget
+gmailicon = widget({ type = "imagebox" })
+gmailicon.image = image(beautiful.widget_mail)
+-- Initilize widget
+gmailwidget = widget({ type = "textbox" })
+--Register widget
+vicious.register(gmailwidget, vicious.widgets.gmail, "GMail: ${count}", 360)
+]]--
+
 -- temperature
 tzswidget = widget({ type = "textbox" })
 vicious.register(tzswidget, vicious.widgets.thermal,
@@ -198,6 +216,10 @@ end
 memtext = widget({ type = "textbox" })
 vicious.register(memtext, vicious.widgets.mem, memtext_format, 13)
 -- }}}
+--
+diotext = widget({ type = "textbox" })
+
+vicious.register(diotext, vicious.widgets.dio,diotext_format, 3)
 
 -- {{{ File system usage
 fsicon = widget({ type = "imagebox" })
@@ -268,16 +290,17 @@ volbar:set_gradient_colors({ beautiful.fg_widget,
 }) -- Enable caching
 vicious.cache(vicious.widgets.volume)
 -- Register widgets
-vicious.register(volbar,    vicious.widgets.volume,  "$1",  2, "PCM")
-vicious.register(volwidget, vicious.widgets.volume, " $1%", 2, "PCM")
--- Register buttons
+vicious.register(volbar,    vicious.widgets.volume,  "$1",  5, "Master")
+vicious.register(volwidget, vicious.widgets.volume, " $1%", 5, "Master")
+-- Comment these lines because,all button bindings were set in acpid
+--[[ Register buttons 
 volbar.widget:buttons(awful.util.table.join(
    awful.button({ }, 1, function () exec("kmix") end),
    awful.button({ }, 4, function () exec("amixer -q set PCM 2dB+", false) vicious.force({volbar, volwidget}) end),
    awful.button({ }, 5, function () exec("amixer -q set PCM 2dB-", false) vicious.force({volbar, volwidget}) end)
 )) -- Register assigned buttons
 volwidget:buttons(volbar.widget:buttons())
--- }}}
+]]-- }}}
 
 -- {{{ Date and time
 dateicon = widget({ type = "imagebox" })
@@ -361,7 +384,10 @@ for s = 1, screen.count() do
         separator, volwidget,  volbar.widget, volicon,
         dnicon.image and separator, upicon, netwidget, dnicon or nil,
         separator, fs.r.widget, fs.s.widget, fsicon,
-        separator, memtext, membar_enable and membar.widget or nil, memicon,
+        separator, memtext,membar_enable and membar.widget or nil, memicon,
+        separator,diotext,
+        --separator,gmailicon,gmailwidget,
+        separator,cpufreq_text,
         separator, tzfound and tzswidget or nil,
         cpugraph_enable and cpugraph.widget or nil, cpuwidget, cpuicon,
         ["layout"] = awful.widget.layout.horizontal.rightleft
@@ -388,6 +414,18 @@ clientbuttons = awful.util.table.join(
 
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
+    awful.key({ altkey,"Shift" }, "Next",  function () awful.client.moveresize( 20,  20, -40, -40) end),
+    awful.key({ altkey,"Shift" }, "Prior", function () awful.client.moveresize(-20, -20,  40,  40) end),
+    awful.key({ altkey,"Shift" }, "Down",  function () awful.client.moveresize(  0,  20,   0,   0) end),
+    awful.key({ altkey,"Shift" }, "Up",    function () awful.client.moveresize(  0, -20,   0,   0) end),
+    awful.key({ altkey,"Shift" }, "Left",  function () awful.client.moveresize(-20,   0,   0,   0) end),
+    awful.key({ altkey,"Shift" }, "Right", function () awful.client.moveresize( 20,   0,   0,   0) end),
+    awful.key({ altkey }, "F11", function () scratch.drop("urxvtcd -e htop", "top","center",1,0.5,true,nil) end),
+    awful.key({ altkey }, "F2", function () scratch.drop("gmrun", "top","center",0.5,0.1,nil,nil) end),
+    awful.key({ altkey }, "F12", function () scratch.drop("urxvtcd", "bottom") end),
+    awful.key({ modkey}, "e", revelation),
+
+    awful.key({ modkey }, "s", function () scratch.pad.toggle() end),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
     awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
@@ -407,8 +445,8 @@ globalkeys = awful.util.table.join(
     -- Layout manipulation
     awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end),
     awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
+    awful.key({ modkey, "Control" }, "Right", function () awful.screen.focus_relative( 1) end),
+    awful.key({ modkey, "Control" }, "Left", function () awful.screen.focus_relative(-1) end),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
     awful.key({ modkey,           }, "Tab",
         function ()
@@ -419,7 +457,7 @@ globalkeys = awful.util.table.join(
         end),
 
     -- Standard program
-    awful.key({ modkey, "Shift"   }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey, "Control" }, "Return", function () awful.util.spawn(terminal) end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
@@ -431,6 +469,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
+
+    awful.key({ altkey,           }, "F8", function () awful.util.spawn("xlock -mode blank") end),
 
     awful.key({ modkey }, "b", function ()
          wibox[mouse.screen].visible = not wibox[mouse.screen].visible
@@ -445,12 +485,18 @@ globalkeys = awful.util.table.join(
                   mypromptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end)
+              end),
+    awful.key({ altkey     }, "Tab",
+            function ()
+                    awful.menu.menu_keys.down = { "Down", "Alt_L" }
+                            local cmenu = awful.menu.clients({width=400}, {keygrabber=true, coords={x=0, y=50}})
+        end)
 )
 
 clientkeys = awful.util.table.join(
+    awful.key({ modkey }, "d", function (c) scratch.pad.set(c, 0.60, 0.60, true) end),
     awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
-    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
+    awful.key({ modkey,           }, "c",      function (c) c:kill()                         end),
     awful.key({ modkey,           }, "t",  awful.client.floating.toggle                     ),
     awful.key({ modkey,           }, "Return", function (c) c:swap(awful.client.getmaster()) end),
     awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
@@ -520,6 +566,21 @@ awful.rules.rules = {
       border_color = beautiful.border_normal }
     },
     { rule = { class = "ROX-Filer" },   properties = { floating = true } },
+    { rule = { class = "Firefox" },   properties = { tag= tags[1][2] } },
+    { rule = { class = "Google-chrome" },   properties = { tag= tags[1][2] } },
+    { rule = { class = "Pidgin" },   properties = { float=true,tag= tags[1][5] } },
+    { rule = { class = "Thunderbird" },   properties = { tag= tags[1][4] } },
+    { rule = { class = "Sublime_text" },   properties = { tag= tags[1][3] } },
+    { rule = { class = "Eclipse" },   properties = { tag= tags[1][6] } },
+    { rule = { class = "Nautilus" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "libreoffice-calc" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "libreoffice-impress" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "libreoffice-startcenter" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "libreoffice-writer" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "VirtualBox" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "MuPDF" },   properties = { tag= tags[1][8] } },
+    { rule = { class = "URxvt" },   properties = { tag= tags[1][1] } }
+
 }
 -- }}}
 
@@ -557,9 +618,14 @@ end)
 -- }}}
 
 -- {{{ Focus signal handlers
-client.add_signal("focus",   function (c) c.border_color = beautiful.border_focus  end)
-client.add_signal("unfocus", function (c) c.border_color = beautiful.border_normal end)
+client.add_signal("focus",   function (c) 
+    c.border_color = beautiful.border_focus
+    c.opacity = 1 end)
+client.add_signal("unfocus", function (c) 
+    c.border_color = beautiful.border_normal 
+    c.opacity=0.5  end)
 -- }}}
+
 
 -- {{{ Arrange signal handler
 for s = 1, screen.count() do screen[s]:add_signal("arrange", function ()
