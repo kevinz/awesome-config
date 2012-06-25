@@ -82,7 +82,7 @@ layouts = {
 taglist_numbers_langs = { 'arabic', 'chinese', 'east_arabic', 'persian_arabic', }
 taglist_numbers_sets = {
 	arabic={ 1, 2, 3, 4, 5, 6, 7, 8, 9 },
-	tag={ "term", "browser", "edit",  "mail","chat", "java", "gui", "read", 9 },
+	tag={ "term", "browser", "edit",  "mail","chat", "java", "gui", "read", "emacs" },
 	chinese={"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"},
 	east_arabic={'١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'}, -- '٠' 0
 	persian_arabic={'٠', '١', '٢', '٣', '۴', '۵', '۶', '٧', '٨', '٩'},
@@ -421,7 +421,7 @@ globalkeys = awful.util.table.join(
     awful.key({ altkey,"Shift" }, "Left",  function () awful.client.moveresize(-20,   0,   0,   0) end),
     awful.key({ altkey,"Shift" }, "Right", function () awful.client.moveresize( 20,   0,   0,   0) end),
     awful.key({ altkey }, "F11", function () scratch.drop("urxvtcd -e htop", "top","center",1,0.5,true,nil) end),
-    awful.key({ altkey }, "F2", function () scratch.drop("gmrun", "top","center",0.5,0.1,nil,nil) end),
+    awful.key({ altkey }, "space", function () scratch.drop("gmrun", "top","center",0.5,0.1,nil,nil) end),
     awful.key({ altkey }, "F12", function () scratch.drop("urxvtcd", "bottom") end),
     awful.key({ modkey}, "e", revelation),
 
@@ -578,8 +578,10 @@ awful.rules.rules = {
     { rule = { class = "libreoffice-startcenter" },   properties = { tag= tags[1][7] } },
     { rule = { class = "libreoffice-writer" },   properties = { tag= tags[1][7] } },
     { rule = { class = "VirtualBox" },   properties = { tag= tags[1][7] } },
+    { rule = { class = "Nvidia-settings" },   properties = { tag= tags[1][7] } },
     { rule = { class = "MuPDF" },   properties = { tag= tags[1][8] } },
     { rule = { class = "URxvt" },   properties = { tag= tags[1][1] } }
+    { rule = { class = "Emacs" },   properties = { tag= tags[1][9] } }
 
 }
 -- }}}
@@ -657,7 +659,7 @@ mytimer:add_signal("timeout", function()
 
   -- define the interval in which the next wallpaper change should occur in seconds
   -- (in this case anytime between 10 and 20 minutes)
-  x = math.random( 600, 1200)
+  x = math.random( 3600, 7200)
 
   --restart the timer
   mytimer.timeout = x
