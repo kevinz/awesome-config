@@ -36,7 +36,7 @@ wallpaper_dir = os.getenv("HOME") .. "/Pictures" -- wallpaper dir
 --- arabic, chinese, {east|persian}_arabic, roman, thai, random
 taglist_numbers = "tag" -- we support arabic (1,2,3...),
 
-cpugraph_enable = true -- Show CPU graph
+cpugraph_enable = false -- Show CPU graph
 cputext_format = " $1%" -- %1 average cpu, %[2..] every other thread individually
 cpufreq_text_format = " $2g" -- %2 cpu freq in GHz
 membar_enable = true -- Show memory bar
@@ -69,7 +69,7 @@ layouts = {
   awful.layout.suit.tile,
   awful.layout.suit.tile.bottom,
   awful.layout.suit.tile.top,
-  --awful.layout.suit.fair,
+  awful.layout.suit.fair,
   awful.layout.suit.max,
   awful.layout.suit.magnifier,
   --awful.layout.suit.floating
@@ -82,7 +82,7 @@ layouts = {
 taglist_numbers_langs = { 'arabic', 'chinese', 'east_arabic', 'persian_arabic', }
 taglist_numbers_sets = {
 	arabic={ 1, 2, 3, 4, 5, 6, 7, 8, 9 },
-	tag={ "term", "browser", "edit",  "mail","chat", "java", "gui", "read", "emacs" },
+	tag={ "term", "browser", "Emacs",  "mail","chat", "java", "gui", "read", "edit" },
 	chinese={"一", "二", "三", "四", "五", "六", "七", "八", "九", "十"},
 	east_arabic={'١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'}, -- '٠' 0
 	persian_arabic={'٠', '١', '٢', '٣', '۴', '۵', '۶', '٧', '٨', '٩'},
@@ -142,13 +142,15 @@ if cpugraph_enable then
 	vicious.register(cpugraph,  vicious.widgets.cpu,      "$1")
 end
 
--- cpu text widget
+--[[ cpu text widget
+]]--
 cpuwidget = widget({ type = "textbox" }) -- initialize
-vicious.register(cpuwidget, vicious.widgets.cpu, cputext_format, 3) -- register
+vicious.register(cpuwidget, vicious.widgets.cpu, cputext_format, 8) -- register
 
 -- cpufreq text widget
 cpufreq_text = widget({ type = "textbox" }) -- initialize
-vicious.register(cpufreq_text, vicious.widgets.cpufreq, cpufreq_text_format, 5,"cpu0") -- register
+vicious.register(cpufreq_text, vicious.widgets.cpufreq, cpufreq_text_format, 3,"cpu0") -- register
+
 
 --[[Create a gmail widget
 gmailicon = widget({ type = "imagebox" })
@@ -169,7 +171,7 @@ vicious.register(tzswidget, vicious.widgets.thermal,
 		else return "" 
 		end
 	end
-	, 19, "thermal_zone0")
+	, 35, "thermal_zone0")
 
 -- }}}
 
@@ -214,12 +216,12 @@ end
 
 -- mem text output
 memtext = widget({ type = "textbox" })
-vicious.register(memtext, vicious.widgets.mem, memtext_format, 13)
+vicious.register(memtext, vicious.widgets.mem, memtext_format, 15)
 -- }}}
 --
 diotext = widget({ type = "textbox" })
 
-vicious.register(diotext, vicious.widgets.dio,diotext_format, 3)
+vicious.register(diotext, vicious.widgets.dio,diotext_format, 8)
 
 -- {{{ File system usage
 fsicon = widget({ type = "imagebox" })
@@ -248,6 +250,8 @@ vicious.register(fs.s, vicious.widgets.fs, "${/media/files used_p}", 599)
 -- }}}
 
 -- {{{ Network usage
+
+
 function print_net(name, down, up)
 	return '<span color="'
 	.. beautiful.fg_netdn_widget ..'">' .. down .. '</span> <span color="'
@@ -257,9 +261,9 @@ end
 dnicon = widget({ type = "imagebox" })
 upicon = widget({ type = "imagebox" })
 
--- Initialize widget
 netwidget = widget({ type = "textbox" })
--- Register widget
+
+--[[ Register widget
 vicious.register(netwidget, vicious.widgets.net,
 	function (widget, args)
 		for _,device in pairs(networks) do
@@ -270,8 +274,10 @@ vicious.register(netwidget, vicious.widgets.net,
 				return print_net(device, args["{"..device .." down_kb}"], args["{"..device.." up_kb}"])
 			end
 		end
-	end, 3)
+	end, 5)
+]]--
 -- }}}
+
 
 
 
@@ -311,7 +317,7 @@ datewidget = widget({ type = "textbox" })
 vicious.register(datewidget, vicious.widgets.date, date_format, 61)
 -- }}}
 
--- {{{ mpd
+--[[ mpd
 
 if whereis_app('curl') and whereis_app('mpd') then
 	mpdwidget = widget({ type = "textbox" })
@@ -326,7 +332,7 @@ if whereis_app('curl') and whereis_app('mpd') then
 	)
 end
 
--- }}}
+--]]
 
 
 -- {{{ System tray
@@ -414,14 +420,14 @@ clientbuttons = awful.util.table.join(
 
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
-    awful.key({ altkey,"Shift" }, "Next",  function () awful.client.moveresize( 20,  20, -40, -40) end),
-    awful.key({ altkey,"Shift" }, "Prior", function () awful.client.moveresize(-20, -20,  40,  40) end),
-    awful.key({ altkey,"Shift" }, "Down",  function () awful.client.moveresize(  0,  20,   0,   0) end),
-    awful.key({ altkey,"Shift" }, "Up",    function () awful.client.moveresize(  0, -20,   0,   0) end),
-    awful.key({ altkey,"Shift" }, "Left",  function () awful.client.moveresize(-20,   0,   0,   0) end),
-    awful.key({ altkey,"Shift" }, "Right", function () awful.client.moveresize( 20,   0,   0,   0) end),
+    --awful.key({ altkey,"Shift" }, "Next",  function () awful.client.moveresize( 20,  20, -40, -40) end),
+    --awful.key({ altkey,"Shift" }, "Prior", function () awful.client.moveresize(-20, -20,  40,  40) end),
+    --awful.key({ altkey,"Shift" }, "Down",  function () awful.client.moveresize(  0,  20,   0,   0) end),
+    --awful.key({ altkey,"Shift" }, "Up",    function () awful.client.moveresize(  0, -20,   0,   0) end),
+    --awful.key({ altkey,"Shift" }, "Left",  function () awful.client.moveresize(-20,   0,   0,   0) end),
+    --awful.key({ altkey,"Shift" }, "Right", function () awful.client.moveresize( 20,   0,   0,   0) end),
     awful.key({ altkey }, "F11", function () scratch.drop("urxvtcd -e htop", "top","center",1,0.5,true,nil) end),
-    awful.key({ altkey }, "space", function () scratch.drop("gmrun", "top","center",0.5,0.1,nil,nil) end),
+    awful.key({ altkey }, "F2", function () scratch.drop("gmrun", "top","center",0.5,0.1,nil,nil) end),
     awful.key({ altkey }, "F12", function () scratch.drop("urxvtcd", "bottom") end),
     awful.key({ modkey}, "e", revelation),
 
@@ -458,6 +464,8 @@ globalkeys = awful.util.table.join(
 
     -- Standard program
     awful.key({ modkey, "Control" }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey, "Control" }, "e", function () awful.util.spawn("emacs") end),
+    awful.key({ modkey, "Control" }, "t", function () awful.util.spawn("thunderbird") end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
@@ -570,7 +578,7 @@ awful.rules.rules = {
     { rule = { class = "Google-chrome" },   properties = { tag= tags[1][2] } },
     { rule = { class = "Pidgin" },   properties = { float=true,tag= tags[1][5] } },
     { rule = { class = "Thunderbird" },   properties = { tag= tags[1][4] } },
-    { rule = { class = "Sublime_text" },   properties = { tag= tags[1][3] } },
+    { rule = { class = "Sublime_text" },   properties = { tag= tags[1][9] } },
     { rule = { class = "Eclipse" },   properties = { tag= tags[1][6] } },
     { rule = { class = "Nautilus" },   properties = { tag= tags[1][7] } },
     { rule = { class = "libreoffice-calc" },   properties = { tag= tags[1][7] } },
@@ -580,8 +588,8 @@ awful.rules.rules = {
     { rule = { class = "VirtualBox" },   properties = { tag= tags[1][7] } },
     { rule = { class = "Nvidia-settings" },   properties = { tag= tags[1][7] } },
     { rule = { class = "MuPDF" },   properties = { tag= tags[1][8] } },
-    { rule = { class = "URxvt" },   properties = { tag= tags[1][1] } }
-    { rule = { class = "Emacs" },   properties = { tag= tags[1][9] } }
+    { rule = { class = "URxvt" },   properties = { tag= tags[1][1] } },
+    { rule = { class = "Emacs" },   properties = { tag= tags[1][3] } }
 
 }
 -- }}}
